@@ -13,7 +13,7 @@ fn check_internet() -> bool {
 }
 
 fn get_from_file(file: &str) -> String {
-    dotenvy::from_filename(file).ok();
+    dotenvy::from_filename(file).expect(&format!("Could not find {file}"));
     let api_key = var("WEATHER_API");
     match api_key {
         Ok(val) => return val,
@@ -23,7 +23,8 @@ fn get_from_file(file: &str) -> String {
 
 fn get_temperature(city: &str, file: &str) {
     if !check_internet() {
-        panic!("No Internet")
+        println!("No Internet");
+        return;
     }
 
     let _ = dotenv();
@@ -46,25 +47,25 @@ fn get_temperature(city: &str, file: &str) {
         let temp = temp.as_f64().unwrap().round() as i64;
         let code = &v["weather"][0]["icon"];
         let icon = match code.as_str().unwrap() {
-            "01d" => " ".to_string(),
-            "01n" => " ".to_string(),
-            "02d" => " ".to_string(),
-            "03d" => " ".to_string(),
-            "03n" => " ".to_string(),
-            "04d" => " ".to_string(),
-            "04n" => " ".to_string(),
-            "02n" => "  ".to_string(),
-            "09" => " ".to_string(),
-            "10d" => " ".to_string(),
-            "10n" => " ".to_string(),
-            "10n 11n" => " ".to_string(),
-            "10d 11d" => " ".to_string(),
-            "11" => " ".to_string(),
-            "13d" => " ".to_string(),
-            "13n" => " ".to_string(),
-            "50d" => " ".to_string(),
-            "50n" => " ".to_string(),
-            _ => "".to_string(),
+            "01d" => " ",
+            "01n" => " ",
+            "02d" => " ",
+            "03d" => " ",
+            "03n" => " ",
+            "04d" => " ",
+            "04n" => " ",
+            "02n" => "  ",
+            "09" => " ",
+            "10d" => " ",
+            "10n" => " ",
+            "10n 11n" => " ",
+            "10d 11d" => " ",
+            "11" => " ",
+            "13d" => " ",
+            "13n" => " ",
+            "50d" => " ",
+            "50n" => " ",
+            _ => "",
         };
         print!("{icon} {temp}°C");
     } else {
