@@ -5,26 +5,22 @@ use reqwest::blocking::Client;
 use serde_json::Value;
 
 fn check_internet() -> bool {
-    let response = Client::new().get("https://google.com").send();
-    match response {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    Client::new().get("https://google.com").send().is_ok()
 }
 
 fn get_from_file(file: &str) -> String {
-    dotenvy::from_filename(file).expect(&format!("Could not find {file}"));
+    let msg = &format!("Could not find {file}");
+    dotenvy::from_filename(file).expect(msg);
     let api_key = var("WEATHER_API");
     match api_key {
-        Ok(val) => return val,
+        Ok(val) => val,
         Err(_) => panic!("Could not find WEATHER_API in {file}"),
     }
 }
 
 fn get_temperature(city: &str, file: &str) {
-    if !check_internet() {
+    while !check_internet() {
         println!("No Internet");
-        return;
     }
 
     let _ = dotenv();
