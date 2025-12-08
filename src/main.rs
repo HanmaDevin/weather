@@ -19,8 +19,10 @@ fn get_from_file(file: &str) -> String {
 }
 
 fn get_temperature(city: &str, file: &str) {
-    while !check_internet() {
+    let mut internet = check_internet();
+    while !internet {
         println!("No Internet");
+        internet = check_internet();
     }
 
     let _ = dotenv();
