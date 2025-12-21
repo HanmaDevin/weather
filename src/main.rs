@@ -27,10 +27,6 @@ impl Display for Output {
     }
 }
 
-fn internet() -> bool {
-    Client::new().get("https://google.com").send().is_ok()
-}
-
 fn get_from_file(file: &str) -> String {
     let msg = &format!("Could not find {file}");
     dotenvy::from_filename(file).expect(msg);
@@ -42,11 +38,6 @@ fn get_from_file(file: &str) -> String {
 }
 
 fn get_temperature(city: &str, file: &str) {
-    if !internet() {
-        print!("{{ \"text\": \"ERR\", \"tooltip\": \"\" }}");
-        return;
-    }
-
     let _ = dotenv();
     let api_key = var("WEATHER_API");
 
@@ -59,7 +50,7 @@ fn get_temperature(city: &str, file: &str) {
     let response = Client::new().get(&url).send();
     let response = match response {
         Ok(resp) => resp,
-        Err(_) => panic!("Could not connect to the weather service"),
+        Err(e) => panic!("ERROR: {e}"),
     };
     let v: Value = serde_json::from_str(&response.text().unwrap()).unwrap();
     if v["cod"] == 200 {
@@ -93,9 +84,8 @@ fn get_temperature(city: &str, file: &str) {
         };
 
         let text = format!("{icon} {temp}°C");
-        let mut tooltip = String::new();
-        tooltip += &format!(
-            "Weather in {}\nFeels like: {}°C\nForecast: {}",
+        let tooltip = format!(
+            "Weather in {}\rFeels like: {}°C\rCondition: {}",
             location, feels_like, forecast
         );
 
