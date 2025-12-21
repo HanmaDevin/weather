@@ -66,6 +66,8 @@ fn get_temperature(city: &str, file: &str) {
         let temp = temp.as_f64().unwrap().round() as i64;
         let feels_like = &v["main"]["feels_like"];
         let feels_like = feels_like.as_f64().unwrap().round() as i64;
+        let location = v["name"].as_str().unwrap_or("ERR");
+        let forecast = v["weather"][0]["main"].as_str().unwrap_or("ERR");
         let code = &v["weather"][0]["icon"];
         let icon = match code.as_str().unwrap() {
             "01d" => "󰖙",
@@ -92,8 +94,8 @@ fn get_temperature(city: &str, file: &str) {
         let text = format!("{icon} {temp}°C");
         let mut tooltip = String::new();
         tooltip += &format!(
-            "Weather {}\nFeels like: {}°C\nForecast: {}",
-            v["name"], feels_like, &v["weather"][0]["main"]
+            "Weather in {}\nFeels like: {}°C\nForecast: {}",
+            location, feels_like, forecast
         );
 
         let output = Output::new(text, tooltip);
