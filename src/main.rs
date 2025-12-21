@@ -67,7 +67,7 @@ fn get_temperature(city: &str, file: &str) {
         let feels_like = &v["main"]["feels_like"];
         let feels_like = feels_like.as_f64().unwrap().round() as i64;
         let location = v["name"].as_str().unwrap_or("ERR");
-        let forecast = v["weather"][0]["main"].as_str().unwrap_or("ERR");
+        let forecast = v["weather"][0]["description"].as_str().unwrap_or("ERR");
         let code = &v["weather"][0]["icon"];
         let icon = match code.as_str().unwrap() {
             "01d" => "󰖙",
