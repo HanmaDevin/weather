@@ -43,7 +43,8 @@ fn get_from_file(file: &str) -> String {
 
 fn get_temperature(city: &str, file: &str) {
     if !internet() {
-        print!("{{ \"text\": \"ERR\", \"tooltip\": \"\" }}")
+        print!("{{ \"text\": \"ERR\", \"tooltip\": \"\" }}");
+        return;
     }
 
     let _ = dotenv();
