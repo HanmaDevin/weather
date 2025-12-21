@@ -85,7 +85,7 @@ fn get_temperature(city: &str, file: &str) {
 
         let text = format!("{icon} {temp}°C");
         let tooltip = format!(
-            "Weather in {}\rFeels like: {}°C\rCondition: {}",
+            "Weather in {}\rTemp: {temp}°C\rFeels like: {}°C\rCondition: {}",
             location, feels_like, forecast
         );
 
