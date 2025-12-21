@@ -1,10 +1,33 @@
 const BASE_URL: &str = "http://api.openweathermap.org/data/2.5/weather";
 
+use std::fmt::Display;
+
 use dotenvy::{dotenv, var};
 use reqwest::blocking::Client;
 use serde_json::Value;
 
-fn check_internet() -> bool {
+struct Output {
+    text: String,
+    tooltip: String,
+}
+
+impl Output {
+    pub fn new(text: String, tooltip: String) -> Self {
+        Output { text, tooltip }
+    }
+}
+
+impl Display for Output {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(
+            f,
+            "{{ \"text\": \"{}\", \"tooltip\": \"{}\" }}",
+            self.text, self.tooltip
+        )
+    }
+}
+
+fn internet() -> bool {
     Client::new().get("https://google.com").send().is_ok()
 }
 
@@ -19,10 +42,8 @@ fn get_from_file(file: &str) -> String {
 }
 
 fn get_temperature(city: &str, file: &str) {
-    let mut internet = check_internet();
-    while !internet {
-        println!("No Internet");
-        internet = check_internet();
+    if !internet() {
+        print!("{{ \"text\": \"ERR\", \"tooltip\": \"\" }}")
     }
 
     let _ = dotenv();
@@ -43,6 +64,8 @@ fn get_temperature(city: &str, file: &str) {
     if v["cod"] == 200 {
         let temp = &v["main"]["temp"];
         let temp = temp.as_f64().unwrap().round() as i64;
+        let feels_like = &v["main"]["feels_like"];
+        let feels_like = feels_like.as_f64().unwrap().round() as i64;
         let code = &v["weather"][0]["icon"];
         let icon = match code.as_str().unwrap() {
             "01d" => "󰖙",
@@ -65,7 +88,16 @@ fn get_temperature(city: &str, file: &str) {
             "50n" => "",
             _ => "",
         };
-        print!("{icon} {temp}°C");
+
+        let text = format!("{icon} {temp}°C");
+        let mut tooltip = String::new();
+        tooltip += &format!(
+            "Weather {}\nFeels like: {}°C\nForecast: {}",
+            v["name"], feels_like, &v["weather"][0]["main"]
+        );
+
+        let output = Output::new(text, tooltip);
+        print!("{output}")
     } else {
         let message = &v["message"];
         panic!("Error: {message}");
@@ -75,7 +107,8 @@ fn get_temperature(city: &str, file: &str) {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
-        println!("Usage: weather [City] [Path to .env file] (optional)");
+        println!("Usage: weather [City] [optional path to .env file]");
+        println!("Default .env location is $HOME");
         return;
     }
     let city = &args[1];
