@@ -2,7 +2,7 @@ const BASE_URL: &str = "http://api.openweathermap.org/data/2.5/weather";
 
 use std::fmt::Display;
 
-use dotenvy::{dotenv, var};
+use dotenvy::var;
 use reqwest::blocking::Client;
 use serde_json::Value;
 
@@ -27,25 +27,7 @@ impl Display for Output {
     }
 }
 
-fn get_from_file(file: &str) -> String {
-    let msg = &format!("Could not find {file}");
-    dotenvy::from_filename(file).expect(msg);
-    let api_key = var("WEATHER_API");
-    match api_key {
-        Ok(val) => val,
-        Err(_) => panic!("Could not find WEATHER_API in {file}"),
-    }
-}
-
-fn get_temperature(city: &str, file: &str) {
-    let _ = dotenv();
-    let api_key = var("WEATHER_API");
-
-    let api_key = match api_key {
-        Ok(val) => val,
-        Err(_) => get_from_file(file),
-    };
-
+fn get_temperature(city: &str, api_key: &str) {
     let url = format!("{BASE_URL}?q={city}&appid={api_key}&units=metric");
     let response = Client::new().get(&url).send();
     let response = match response {
@@ -99,12 +81,39 @@ fn get_temperature(city: &str, file: &str) {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    if args.len() < 2 {
-        println!("Usage: weather [City] [optional path to .env file]");
-        println!("Default .env location is $HOME");
-        return;
+    let file_path = if let Some(path) = args.get(2) {
+        path.clone()
+    } else {
+        dirs::home_dir()
+            .expect("Could not find home directory")
+            .join(".env")
+            .to_str()
+            .unwrap()
+            .to_string()
+    };
+
+    if let Err(_) = dotenvy::from_path(&file_path) {
+        println!("Could not load .env file from: {}", file_path);
     }
-    let city = &args[1];
-    let file = if args.len() > 2 { &args[2] } else { "~/.env" };
-    get_temperature(city, file);
+
+    let city = if let Some(city_arg) = args.get(1) {
+        city_arg.clone()
+    } else if let Ok(city_env) = var("CITY") {
+        city_env
+    } else {
+        println!("Usage: weather [optional City] [optional path to .env file]");
+        println!("City can be provided as an argument or in the .env file.");
+        println!("Default .env location is $HOME/.env");
+        return;
+    };
+
+    let api_key = match var("WEATHER_API") {
+        Ok(val) => val,
+        Err(_) => {
+            println!("Could not find WEATHER_API in environment or .env file.");
+            return;
+        }
+    };
+
+    get_temperature(&city, &api_key);
 }
