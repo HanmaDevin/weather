@@ -67,8 +67,8 @@ fn get_temperature(city: &str, api_key: &str) {
 
         let text = format!("{icon} {temp}°C");
         let tooltip = format!(
-            "Weather in {}\rTemp: {temp}°C\rFeels like: {}°C\rCondition: {}",
-            location, feels_like, forecast
+            "Weather in {}\rTemp: {}°C\rFeels like: {}°C\rCondition: {}",
+            location, temp, feels_like, forecast
         );
 
         let output = Output::new(text, tooltip);
