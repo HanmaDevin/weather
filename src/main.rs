@@ -13,7 +13,7 @@ struct Output {
 
 impl Output {
     pub fn new(text: String, tooltip: String) -> Self {
-        Output { text, tooltip }
+        Self { text, tooltip }
     }
 }
 
