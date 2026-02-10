@@ -28,7 +28,7 @@ impl Display for Output {
 }
 
 fn get_temperature(city: &str, api_key: &str) {
-    let url = format!("{}?q={city}&appid={api_key}&units=metric", BASE_URL);
+    let url = format!("{BASE_URL}?q={city}&appid={api_key}&units=metric");
     let response = Client::new().get(&url).send();
     let response = match response {
         Ok(resp) => resp,
